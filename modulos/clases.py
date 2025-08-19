@@ -1,6 +1,8 @@
 import csv
-from modulos.errores import LibroNoEncontrado
-from modulos.colores import RED, GREEN, YELLOW, CYAN, BOLD, RESET
+import shutil
+from datetime import datetime
+from modulos.errores import LibroNoEncontrado, ErrorAlEscribirEstado
+from modulos.colores import RED, GREEN, YELLOW, RESET
 
 class Libro:
     def __init__(self, nombre, autor, publicacion, estado):
@@ -54,6 +56,16 @@ class Biblioteca:
         except Exception as e:
             print(f"Error al cargar los libros: {e}")
 
+    def guardar_libros(self):
+        try:
+            with open(self.archivo_csv, 'w', encoding='utf-8', newline='') as archivo:
+                writer = csv.writer(archivo)
+                for libro in self.libros:
+                    writer.writerow(libro.to_csv_row())
+            print(f"Datos guardados exitosamente en {self.archivo_csv}")
+        except Exception as e:
+            print(f"Error al guardar los libros: {e}")
+
     def mostrar_libros(self):
         # iteración de los libros de la biblioteca, al imprimirlos se mostrará el __str__ de estos
         for libro in self.libros:
@@ -68,12 +80,19 @@ class Biblioteca:
             estado = input("Ingrese el estado del libro (disponible/no disponible): ").strip().lower()
             formato = input("Ingrese el formato del libro (deje vacío si es un libro físico): ").strip().lower()
             # si al agregar el libro se especifica un formato, se entiende que es un libro electronico, por lo que se instancia utilizando la clase LibroElectronico
+            if estado == "disponible":
+                estado = True
+            elif estado == "no disponible":
+                estado = False
+            else:
+                raise ErrorAlEscribirEstado("Se ha ingresado un estado fuera del formato permitido. Operación cancelada")
             if formato:
                 libro = LibroElectronico(nombre, autor, publicacion, estado, formato)
             else:
                 libro = Libro(nombre, autor, publicacion, estado)
             # luego de eso, se agrega el libro al final de la lista de libros
             self.libros.append(libro)
+            self.guardar_libros()
             print(f"\n¡'{nombre}' agregado a la biblioteca exitosamente!.\n")
         except Exception as error:
             print(f"Error al agregar el libro. {error}")
@@ -100,42 +119,28 @@ class Biblioteca:
         libro.estado = not libro.estado
 
     def verificar_disponibilidad(self, libro):
-        if libro.estado:
-            print(f"El libro '{libro.nombre}' se encuentra {GREEN}disponible{RESET}.")
-            opcion = input("¿Desea prestar este ejemplar? (s/n)").strip().lower()
-            if opcion == "s":
-                return True
-            else:
-                print("Operación cancelada.")
-                return False
-        else:
-            print(f"El libro '{libro.nombre}' no está disponible para préstamo.")
-            opcion = input("¿Desea devolver este ejemplar? (s/n)").strip().lower()
-            if opcion == "s":
-                return True
-            else:
-                print("Operación cancelada.")
-                return False
+            print(f"El libro '{libro.nombre}' se encuentra {'{GREEN}disponible{RESET}' if libro.estado else '{RED}prestado{RESET}'}.")
+            try:
+                opcion = input(f"¿Desea {'prestar' if libro.estado else 'devolver'} este ejemplar? (s/n)").strip().lower()
+                if opcion == "s":
+                    return True
+                else:
+                    print("Operación cancelada.")
+                    return False
+            except Exception as error:
+                print(f"Error: {error}")
 
-
-    def prestar_libro(self):
+    def prestar_devolver(self):
         print("\n||||||||||||Préstamo y Devolución de libros||||||||||||\n")
         try:
             libro = self.buscar_libros(False)
             if libro:
                 if self.verificar_disponibilidad(libro):
                     self.cambiar_estado(libro)
-                    print(f"El libro '{libro.nombre}' ha sido {YELLOW}{"devuelto" if libro.estado else "prestado"}.{RESET}")
+                    self.guardar_libros()
+                    print(f"\nEl libro '{libro.nombre}' ha sido {YELLOW}{"devuelto" if libro.estado else "prestado"}.{RESET}\n")
         except Exception as error:
             print(f"Error: {error}")
-
-    # def devolver_libro(self):
-    #     print("\n||||||||||||Devolución de libro||||||||||||\n")
-    #     try:
-    #         libro = self.buscar_libros(False)
-    #         if libro:
-
-
     
     def eliminar_libro(self):
         print("\n||||||||||||Eliminar libro||||||||||||\n")
@@ -143,6 +148,17 @@ class Biblioteca:
             libro = self.buscar_libros(False)
             if libro:
                 self.libros.remove(libro)
+                self.guardar_libros()
                 print(f"El libro '{libro.nombre}' ha sido eliminado de la biblioteca.")
         except LibroNoEncontrado as error:
             print(f"Error: {error}")
+
+    def crear_respaldo(self, nombre_respaldo=None):
+        if nombre_respaldo is None:
+            fecha = datetime.now().strftime("%Y%m%d_%H%M%S")
+            nombre_respaldo = f"respaldo_libros_{fecha}.csv"
+        try:
+            shutil.copy2(self.archivo_csv, nombre_respaldo)
+            print(f"Respaldo creado: {nombre_respaldo}")
+        except Exception as e:
+            print(f"Error al crear respaldo: {e}")
