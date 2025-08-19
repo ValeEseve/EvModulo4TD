@@ -11,6 +11,8 @@ class Libro:
         self.publicacion = publicacion
         self.estado = estado
     
+    def a_csv(self):
+        return [self.nombre, self.autor, self.publicacion, self.estado]
     # __str__ siempre devuelve una cadena que representa el objeto
     def __str__(self):
         return f"{self.nombre}, Autor: {self.autor}, Año de publicación: {self.publicacion}, Estado: {'Disponible' if self.estado else 'No disponible'}"
@@ -20,6 +22,10 @@ class LibroElectronico (Libro):
         super().__init__(nombre, autor, publicacion, estado)
         self.formato = formato
     
+    def a_csv(self):
+        return [self.nombre, self.autor, self.publicacion, self.estado, self.formato]
+        return 
+
     def __str__(self):
         return f"{super().__str__()}, Formato: {self.formato}"
     
@@ -58,10 +64,10 @@ class Biblioteca:
 
     def guardar_libros(self):
         try:
-            with open(self.archivo_csv, 'w', encoding='utf-8', newline='') as archivo:
+            with open('libros.csv', 'w', encoding='utf-8', newline='') as archivo:
                 writer = csv.writer(archivo)
                 for libro in self.libros:
-                    writer.writerow(libro.to_csv_row())
+                    writer.writerow(libro.a_csv())
             print(f"Datos guardados exitosamente en {self.archivo_csv}")
         except Exception as e:
             print(f"Error al guardar los libros: {e}")
@@ -85,7 +91,7 @@ class Biblioteca:
             elif estado == "no disponible":
                 estado = False
             else:
-                raise ErrorAlEscribirEstado("Se ha ingresado un estado fuera del formato permitido. Operación cancelada")
+                raise ErrorAlEscribirEstado(f"{RED}Se ha ingresado un estado fuera del formato permitido. Operación cancelada{RESET}")
             if formato:
                 libro = LibroElectronico(nombre, autor, publicacion, estado, formato)
             else:
@@ -119,7 +125,7 @@ class Biblioteca:
         libro.estado = not libro.estado
 
     def verificar_disponibilidad(self, libro):
-            print(f"El libro '{libro.nombre}' se encuentra {'{GREEN}disponible{RESET}' if libro.estado else '{RED}prestado{RESET}'}.")
+            print(f"El libro '{libro.nombre}' se encuentra {f'{GREEN}disponible{RESET}' if libro.estado else f'{RED}prestado{RESET}'}.")
             try:
                 opcion = input(f"¿Desea {'prestar' if libro.estado else 'devolver'} este ejemplar? (s/n)").strip().lower()
                 if opcion == "s":
