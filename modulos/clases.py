@@ -29,23 +29,29 @@ class Biblioteca:
 
     def cargar_libros(self):
         # Se abre el archivo
-        with open('libros.csv', 'r', encoding='utf-8') as archivo:
-            # se crea el reader del csv
-            reader = csv.reader(archivo)
-            #  iteración del reader 
-            for row in reader:
-                # si es un libro, se crea utilizando la clase Libro
-                if len(row) == 4:
-                    nombre, autor, publicacion, estado = row
-                    libro = Libro(nombre, autor, publicacion, estado)
-                    self.libros.append(libro)
-                # si tiene 5 valores, es un libro electronico
-                elif len(row) == 5:
-                    nombre, autor, publicacion, estado, formato = row
-                    libro = LibroElectronico(nombre, autor, publicacion, estado, formato)
-                    self.libros.append(libro)
-                else:
-                    print("Formato del libro no válido")
+        try:
+            with open('libros.csv', 'r', encoding='utf-8') as archivo:
+                # se crea el reader del csv
+                reader = csv.reader(archivo)
+                #  iteración del reader 
+                for row in reader:
+                    # si es un libro, se crea utilizando la clase Libro
+                    if len(row) == 4:
+                        nombre, autor, publicacion, estado = row
+                        libro = Libro(nombre, autor, publicacion, estado)
+                        self.libros.append(libro)
+                    # si tiene 5 valores, es un libro electronico
+                    elif len(row) == 5:
+                        nombre, autor, publicacion, estado, formato = row
+                        libro = LibroElectronico(nombre, autor, publicacion, estado, formato)
+                        self.libros.append(libro)
+                    else:
+                        print("Formato del libro no válido")
+        # siempre hay que poner los errores más específicos  rimero para que sean capturados antes que los más ampmlios.
+        except FileNotFoundError:
+            print("El archivo 'libros.csv' no fue encontrado.")
+        except Exception as e:
+            print(f"Error al cargar los libros: {e}")
 
     def mostrar_libros(self):
         # iteración de los libros de la biblioteca, al imprimirlos se mostrará el __str__ de estos
@@ -60,19 +66,19 @@ class Biblioteca:
             publicacion = input("Ingrese el año de publicación del libro: ").strip()
             estado = input("Ingrese el estado del libro (disponible/no disponible): ").strip().lower()
             formato = input("Ingrese el formato del libro (deje vacío si es un libro físico): ").strip().lower()
-        except:
-            print("Error al agregar el libro.")
-        # si al agregar el libro se especifica un formato, se entiende que es un libro electronico, por lo que se instancia utilizando la clase LibroElectronico
-        if formato:
-            libro = LibroElectronico(nombre, autor, publicacion, estado, formato)
-        else:
-            libro = Libro(nombre, autor, publicacion, estado)
-        # luego de eso, se agrega el libro al final de la lista de libros
-        self.libros.append(libro)
-        print(f"\n¡'{nombre}' agregado a la biblioteca exitosamente!.\n")
-
+            # si al agregar el libro se especifica un formato, se entiende que es un libro electronico, por lo que se instancia utilizando la clase LibroElectronico
+            if formato:
+                libro = LibroElectronico(nombre, autor, publicacion, estado, formato)
+            else:
+                libro = Libro(nombre, autor, publicacion, estado)
+            # luego de eso, se agrega el libro al final de la lista de libros
+            self.libros.append(libro)
+            print(f"\n¡'{nombre}' agregado a la biblioteca exitosamente!.\n")
+        except Exception as error:
+            print(f"Error al agregar el libro. {error}")
+        
+    # agregué el argumento (o parámetro?) mensaje para que la misma función que sirve para buscar un libro, devuelva este para el resto de las funciones sin enviar el mensaje de búsqueda
     def buscar_libros(self, mensaje = True):
-        print("\n||||||||||||Búsqueda de libro||||||||||||\n")
         try:
             nombre = input("Ingrese el nombre del libro: ").strip().lower()
             for libro in self.libros:
@@ -81,8 +87,12 @@ class Biblioteca:
                         print(f'{libro.nombre} encontrado: {libro}')
                     return libro
             raise LibroNoEncontrado(f"El libro '{nombre}' no se encuentra en la biblioteca.")
-        except ValueError as error:
+        except LibroNoEncontrado as error:
             print(f"Error: {error}")
+            return None
+        except Exception as error:
+            print(f"Error inesperado: {error}")
+            return None
                 
     
     def prestar_libro(self):
@@ -95,8 +105,16 @@ class Biblioteca:
                     print(f"El libro '{libro.nombre}' ha sido prestado.")
                 else:
                     print(f"El libro '{libro.nombre}' no está disponible para préstamo.")
-        except LibroNoEncontrado as error:
+        except Exception as error:
             print(f"Error: {error}")
+
+    def devolver_libro(self):
+        print("\n||||||||||||Devolución de libro||||||||||||\n")
+        try:
+            libro = self.buscar_libros(False)
+            if libro:
+                
+
     
     def eliminar_libro(self):
         print("\n||||||||||||Eliminar libro||||||||||||\n")

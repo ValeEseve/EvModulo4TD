@@ -1,7 +1,7 @@
-El señor de los anillos, J.R.R. Tolkien, 1954, disponible
-Cien años de soledad, Gabriel García Márquez, 1967, disponible
-Orgullo y prejuicio, Jane Austen, 1813, no disponible
-1984, George Orwell, 1949, disponible, epub
-El principito, Antoine de Saint-Exupéry, 1943, disponible, pdf
-El código de la vida, Richard Dawkins, 1986, no disponible
-El arte de la guerra, Sun Tzu, siglo V a.C., disponible
+El señor de los anillos, J.R.R. Tolkien, 1954, True
+Cien años de soledad, Gabriel García Márquez, 1967, True
+Orgullo y prejuicio, Jane Austen, 1813, False
+1984, George Orwell, 1949, True, epub
+El principito, Antoine de Saint-Exupéry, 1943, True, pdf
+El código de la vida, Richard Dawkins, 1986, False
+El arte de la guerra, Sun Tzu, siglo V a.C., True
