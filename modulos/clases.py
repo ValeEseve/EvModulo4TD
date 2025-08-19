@@ -1,5 +1,6 @@
 import csv
 from modulos.errores import LibroNoEncontrado
+from modulos.colores import RED, GREEN, YELLOW, CYAN, BOLD, RESET
 
 class Libro:
     def __init__(self, nombre, autor, publicacion, estado):
@@ -10,7 +11,7 @@ class Libro:
     
     # __str__ siempre devuelve una cadena que representa el objeto
     def __str__(self):
-        return f"{self.nombre}, Autor: {self.autor}, Año de publicación: {self.publicacion}, Estado: {self.estado}"
+        return f"{self.nombre}, Autor: {self.autor}, Año de publicación: {self.publicacion}, Estado: {'Disponible' if self.estado else 'No disponible'}"
 
 class LibroElectronico (Libro):
     def __init__(self, nombre, autor, publicacion, estado, formato):
@@ -94,26 +95,46 @@ class Biblioteca:
             print(f"Error inesperado: {error}")
             return None
                 
-    
+
+    def cambiar_estado(self, libro):
+        libro.estado = not libro.estado
+
+    def verificar_disponibilidad(self, libro):
+        if libro.estado:
+            print(f"El libro '{libro.nombre}' se encuentra {GREEN}disponible{RESET}.")
+            opcion = input("¿Desea prestar este ejemplar? (s/n)").strip().lower()
+            if opcion == "s":
+                return True
+            else:
+                print("Operación cancelada.")
+                return False
+        else:
+            print(f"El libro '{libro.nombre}' no está disponible para préstamo.")
+            opcion = input("¿Desea devolver este ejemplar? (s/n)").strip().lower()
+            if opcion == "s":
+                return True
+            else:
+                print("Operación cancelada.")
+                return False
+
+
     def prestar_libro(self):
-        print("\n||||||||||||Préstamo de libro||||||||||||\n")
+        print("\n||||||||||||Préstamo y Devolución de libros||||||||||||\n")
         try:
             libro = self.buscar_libros(False)
             if libro:
-                if libro.estado == "disponible":
-                    libro.estado = "no disponible"
-                    print(f"El libro '{libro.nombre}' ha sido prestado.")
-                else:
-                    print(f"El libro '{libro.nombre}' no está disponible para préstamo.")
+                if self.verificar_disponibilidad(libro):
+                    self.cambiar_estado(libro)
+                    print(f"El libro '{libro.nombre}' ha sido {YELLOW}{"devuelto" if libro.estado else "prestado"}.{RESET}")
         except Exception as error:
             print(f"Error: {error}")
 
-    def devolver_libro(self):
-        print("\n||||||||||||Devolución de libro||||||||||||\n")
-        try:
-            libro = self.buscar_libros(False)
-            if libro:
-                
+    # def devolver_libro(self):
+    #     print("\n||||||||||||Devolución de libro||||||||||||\n")
+    #     try:
+    #         libro = self.buscar_libros(False)
+    #         if libro:
+
 
     
     def eliminar_libro(self):
